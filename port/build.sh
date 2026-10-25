@@ -22,7 +22,7 @@ OUT="$HERE/out"
 GADGET_VERSION=17.24.3
 APKEDITOR_VERSION=1.4.9
 BT="${BUILD_TOOLS:-/opt/android-sdk/build-tools/37.0.0}"
-ANDROID_JAR="${ANDROID_JAR:-/home/hien/android-sdk/platforms/android-36/android.jar}"
+ANDROID_JAR="${ANDROID_JAR:-$HOME/android-sdk/platforms/android-36/android.jar}"
 KS="$B/k12.keystore"
 KS_PASS=k12port # This password is not a secret, the real secret is the keystore, which is gitignored. You cant do anything with this password btw
 
