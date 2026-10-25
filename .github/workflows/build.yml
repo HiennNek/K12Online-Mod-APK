@@ -1,15 +1,15 @@
 name: build
 
 # Manual run: Actions -> build -> Run workflow.
-# Needs one repo secret:
-#   KEYSTORE_B64   base64 -w0 .build/k12.keystore
-# (the keystore password is in port/build.sh)
+# Needs the repo secret KEYSTORE_B64 = base64 -w0 .build/k12.keystore
+# (the keystore password is in port/build.sh). The original XAPK comes from a
+# release asset because APKPure blocks GitHub runner IPs (Cloudflare 403).
 on:
   workflow_dispatch:
 
 env:
   APP_VERSION: "299"          # versionCode of the original XAPK to build from
-  XAPK_URL: https://d.apkpure.com/b/XAPK/vn.viettelstudy.k12?versionCode=299
+  XAPK_URL: https://github.com/HiennNek/storage/releases/download/k/K12Online_2.2.2.xapk
   XAPK: K12Online_2.2.2_APKPure.xapk
 
 jobs:
@@ -54,10 +54,7 @@ jobs:
 
       - name: Download original XAPK
         if: steps.xapk.outputs.cache-hit != 'true'
-        run: |
-          curl -fL --retry 3 --retry-delay 5 \
-            -A 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36' \
-            -o "$XAPK" "$XAPK_URL"
+        run: curl -fL --retry 3 --retry-delay 5 -o "$XAPK" "$XAPK_URL"
 
       - name: Unpack original splits
         run: |
