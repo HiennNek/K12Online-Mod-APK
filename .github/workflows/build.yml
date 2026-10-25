@@ -1,0 +1,93 @@
+name: build
+
+# Manual run: Actions -> build -> Run workflow.
+# Needs one repo secret:
+#   KEYSTORE_B64   base64 -w0 .build/k12.keystore
+# (the keystore password is in port/build.sh)
+on:
+  workflow_dispatch:
+
+env:
+  APP_VERSION: "299"          # versionCode of the original XAPK to build from
+  XAPK_URL: https://d.apkpure.com/b/XAPK/vn.viettelstudy.k12?versionCode=299
+  XAPK: K12Online_2.2.2_APKPure.xapk
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install apktool
+        run: |
+          mkdir -p "$RUNNER_TEMP/bin"
+          curl -fsSL -o "$RUNNER_TEMP/bin/apktool.jar" \
+            https://github.com/iBotPeaches/Apktool/releases/download/v3.0.3/apktool_3.0.3.jar
+          printf '#!/bin/sh\nexec java -jar "%s/apktool.jar" "$@"\n' "$RUNNER_TEMP/bin" \
+            > "$RUNNER_TEMP/bin/apktool"
+          chmod +x "$RUNNER_TEMP/bin/apktool"
+          echo "$RUNNER_TEMP/bin" >> "$GITHUB_PATH"
+
+      - name: Locate Android SDK
+        run: |
+          SDK="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-/usr/local/lib/android/sdk}}"
+          echo "BUILD_TOOLS=$(ls -d "$SDK"/build-tools/* | sort -V | tail -1)" >> "$GITHUB_ENV"
+          echo "ANDROID_JAR=$(ls -d "$SDK"/platforms/* | sort -V | tail -1)/android.jar" >> "$GITHUB_ENV"
+
+      - name: Cache original XAPK
+        id: xapk
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.XAPK }}
+          key: xapk-vn.viettelstudy.k12-${{ env.APP_VERSION }}
+
+      - name: Download original XAPK
+        if: steps.xapk.outputs.cache-hit != 'true'
+        run: |
+          curl -fL --retry 3 --retry-delay 5 \
+            -A 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36' \
+            -o "$XAPK" "$XAPK_URL"
+
+      - name: Unpack original splits
+        run: |
+          unzip -o "$XAPK" vn.viettelstudy.k12.apk config.arm64_v8a.apk \
+            config.en.apk config.xxhdpi.apk
+
+      - name: Restore signing key
+        env:
+          KEYSTORE_B64: ${{ secrets.KEYSTORE_B64 }}
+        run: |
+          mkdir -p .build
+          printf '%s' "$KEYSTORE_B64" | base64 -d > .build/k12.keystore
+
+      - name: Parser self-check
+        run: node port/test.js
+
+      - name: Build
+        run: ./port/build.sh --merge
+
+      - name: Checksums
+        run: sha256sum K12Online_2.2.2_hacked.apk K12Online_2.2.2_hacked.xapk
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: K12Online_2.2.2_hacked.apk
+          path: K12Online_2.2.2_hacked.apk
+          retention-days: 7
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: K12Online_2.2.2_hacked.xapk
+          path: K12Online_2.2.2_hacked.xapk
+          retention-days: 7
