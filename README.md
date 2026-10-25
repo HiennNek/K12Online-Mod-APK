@@ -1,4 +1,4 @@
-<h1 align="center">K12Online Mod APK<br><small>Tìm đáp án bài kiểm tra K12Online</small></h1>
+<h1 align="center">K12Online Mod APK<br><small>Tìm đáp án bài kiểm tra K12Online trên app</small></h1>
 
 ## Cách build dự án này
 
