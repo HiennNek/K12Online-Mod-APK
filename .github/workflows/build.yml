@@ -1,11 +1,17 @@
 name: build
 
 # Manual run: Actions -> build -> Run workflow.
+# Each run publishes a release (tag input, or v2.2.2-<run number>) with both
+# files attached, and keeps them as artifacts for 7 days.
 # Needs the repo secret KEYSTORE_B64 = base64 -w0 .build/k12.keystore
 # (the keystore password is in port/build.sh). The original XAPK comes from a
 # release asset because APKPure blocks GitHub runner IPs (Cloudflare 403).
 on:
   workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag (blank = v2.2.2-<run number>)"
+        required: false
 
 env:
   APP_VERSION: "299"          # versionCode of the original XAPK to build from
@@ -16,6 +22,8 @@ jobs:
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 45
+    permissions:
+      contents: write       # create the release and upload its assets
 
     steps:
       - uses: actions/checkout@v4
@@ -88,3 +96,15 @@ jobs:
           name: K12Online_2.2.2_hacked.xapk
           path: K12Online_2.2.2_hacked.xapk
           retention-days: 7
+
+      - name: Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ inputs.tag || format('v2.2.2-{0}', github.run_number) }}
+        run: |
+          gh release create "$TAG" \
+            K12Online_2.2.2_hacked.apk \
+            K12Online_2.2.2_hacked.xapk \
+            --title "K12Online 2.2.2 ($TAG)" \
+            --notes "Automated build from $GITHUB_SHA."
+          echo "https://github.com/$GITHUB_REPOSITORY/releases/tag/$TAG" >> "$GITHUB_STEP_SUMMARY"
