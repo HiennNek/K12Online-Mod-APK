@@ -1,0 +1,32 @@
+# Original app files: extract these from K12Online_2.2.2_APKPure.xapk into the
+# repo root before building (copyrighted, ~500 MB).
+vn.viettelstudy.k12.apk
+config.arm64_v8a.apk
+config.en.apk
+config.xxhdpi.apk
+*.xapk
+manifest.json
+icon.png
+
+# Build output
+K12Online_*.apk
+*.idsig
+port/out/
+port/.agent-entry.js
+
+# Build cache: decoded original APK, ~2 GB of intermediate APKs and the signing
+# key (k12.keystore) all live here.
+.build/
+
+# Signing material
+*.keystore
+*.jks
+*.p12
+
+# Agent build deps
+port/node_modules/
+
+# OS / editor noise
+.DS_Store
+*.log
+*.swp

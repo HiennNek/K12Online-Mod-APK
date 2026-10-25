@@ -1,0 +1,12 @@
+{
+  "name": "k12-port-agent",
+  "private": true,
+  "description": "Frida agent for the K12Online APK; bundled by build.sh",
+  "dependencies": {
+    "frida-java-bridge": "^7.0.13"
+  },
+  "devDependencies": {
+    "@types/frida-gum": "^19.0.0",
+    "frida-compile": "16.4.1"
+  }
+}
