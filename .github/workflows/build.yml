@@ -15,6 +15,7 @@ on:
 
 env:
   APP_VERSION: "299"          # versionCode of the original XAPK to build from
+  VERSION_NAME: "2.2.2"       # versionName, used for the release asset name
   XAPK_URL: https://github.com/HiennNek/storage/releases/download/k/K12Online_2.2.2.xapk
   XAPK: K12Online_2.2.2_APKPure.xapk
 
@@ -102,9 +103,8 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ inputs.tag || format('v2.2.2-{0}', github.run_number) }}
         run: |
-          gh release create "$TAG" \
-            K12Online_2.2.2_hacked.apk \
-            K12Online_2.2.2_hacked.xapk \
-            --title "K12Online 2.2.2 ($TAG)" \
+          cp K12Online_2.2.2_hacked.apk "K12Online-Mod-APK_$VERSION_NAME.apk"
+          gh release create "$TAG" "K12Online-Mod-APK_$VERSION_NAME.apk" \
+            --title "K12Online-Mod-APK_$VERSION_NAME ($TAG)" \
             --notes "Automated build from $GITHUB_SHA."
           echo "https://github.com/$GITHUB_REPOSITORY/releases/tag/$TAG" >> "$GITHUB_STEP_SUMMARY"
