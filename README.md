@@ -24,16 +24,16 @@ port/out/         build output (ignored)
 Ignored on purpose — copyrighted, huge, or secret:
 
 - `vn.viettelstudy.k12.apk`, `config.arm64_v8a.apk`, `config.en.apk`,
-  `config.xxhdpi.apk` — the original splits, ~500 MB
+  `config.xxhdpi.apk`, `icon.png`, `manifest.json` — the original XAPK, ~500 MB
 - `K12Online_2.2.2_hacked.xapk` / `K12Online_2.2.2_hacked.apk` — built output
 - `.build/` — decoded APK, intermediates and the signing key
 - `port/node_modules/`
 
-To build, extract the four splits from the original
-`K12Online_2.2.2_APKPure.xapk` into the repo root (`icon.png` and
-`manifest.json` are committed), then:
+To build, extract the original `K12Online_2.2.2_APKPure.xapk` into the repo
+root, then:
 
 ```bash
+unzip K12Online_2.2.2_APKPure.xapk
 ./port/build.sh           # XAPK + split APKs
 ./port/build.sh --merge   # ... plus one universal APK
 ```

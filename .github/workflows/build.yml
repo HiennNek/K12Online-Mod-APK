@@ -59,7 +59,7 @@ jobs:
       - name: Unpack original splits
         run: |
           unzip -o "$XAPK" vn.viettelstudy.k12.apk config.arm64_v8a.apk \
-            config.en.apk config.xxhdpi.apk
+            config.en.apk config.xxhdpi.apk icon.png manifest.json
 
       - name: Restore signing key
         env:
