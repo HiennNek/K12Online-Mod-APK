@@ -108,6 +108,20 @@ assert.strictEqual(groupReport.groups[0].questions[0].answer, 'B. low');
 assert.strictEqual(groupReport.groups[0].questions[1].answer, 'D. amount');
 assert.deepStrictEqual(groupReport.groups[0].questions.map((q) => q.index), [1, 2]);
 
+// PDF exams: the choices are just the letters, so the answer stays a letter.
+const pdfReport = h.buildReport([{
+  questionIndex: 1,
+  elementType: 'Choice',
+  choices: [
+    { answerCode: '1', point: '1', answerTitle: 'A' },
+    { answerCode: '2', point: '', answerTitle: 'B' },
+    { answerCode: '3', point: '', answerTitle: 'C' },
+    { answerCode: '4', point: '', answerTitle: 'D' },
+  ],
+}]);
+assert.strictEqual(pdfReport.groups[0].questions[0].answer, 'A');
+assert.deepStrictEqual(pdfReport.groups[0].questions[0].options.map((o) => o.text), ['', '', '', '']);
+
 // Content-Length response split across reads.
 const body = Buffer.from(JSON.stringify({ data: { items: [choice] } }));
 const head = Buffer.from('HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: ' + body.length + '\r\n\r\n');

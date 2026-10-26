@@ -168,6 +168,12 @@ function orderedEntries(item) {
 
 function truncate(s, n) { return s.length > n ? s.slice(0, n - 1) + '\u2026' : s; }
 
+// PDF-based exams carry only the letter ("A", "B", ...) as the option text.
+function optionText(label, value) {
+    var text = txt(value);
+    return text === label ? '' : text;
+}
+
 // The web payload marks the key with point > 0. Some API builds use a boolean.
 function isMarked(value) {
     if (markedPoint(value.point)) return true;
@@ -201,9 +207,10 @@ function classify(item) {
 function describeChild(item) {
     var key = txt(item.answer);
     var opts = item.options.map(function (o, i) {
+        var label = labelUpper(i);
         return {
-            label: labelUpper(i),
-            text: txt(o.title),
+            label: label,
+            text: optionText(label, o.title),
             marked: String(o.answerCode) === key,
         };
     });
@@ -215,7 +222,9 @@ function describeChild(item) {
         title: txt(item.answerTitle) || txt(item.textTitle) || txt(item.title),
         note: txt(item.answerDescription),
         answer: marked.length
-            ? marked.map(function (o) { return o.label + '. ' + truncate(o.text, 60); }).join(' | ')
+            ? marked.map(function (o) {
+                return o.label + (o.text ? '. ' + truncate(o.text, 60) : '');
+            }).join(' | ')
             : '\u2014',
         options: opts,
         statements: [],
@@ -246,16 +255,17 @@ function describeItem(item) {
         // "B. 4"), so number them the way the exam does: A, B, C, D.
         out.lettered = entries.some(function (e) { return txt(e.value.answerCode) !== ''; });
         out.options = entries.map(function (e, i) {
+            var label = labelUpper(i);
             return {
-                label: labelUpper(i),
-                text: txt(e.value.answerTitle),
+                label: label,
+                text: optionText(label, e.value.answerTitle),
                 marked: isMarked(e.value),
             };
         });
         var marked = out.options.filter(function (o) { return o.marked; });
         out.answer = marked.length
             ? marked.map(function (o) {
-                return out.lettered ? o.label + '. ' + truncate(o.text, 60) : o.text;
+                return out.lettered ? o.label + (o.text ? '. ' + truncate(o.text, 60) : '') : o.text;
             }).join(' | ')
             : '\u2014';
     } else if (kind === 'truefalse') {

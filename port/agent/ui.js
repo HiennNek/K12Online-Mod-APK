@@ -453,27 +453,35 @@ function send() {
   try { prompt('k12|' + Array.prototype.slice.call(arguments).join('|')); } catch (e) {}
 }
 
+function answerKey(q) {
+  if (q.kind === 'choice') {
+    return q.options.filter(function (o) { return o.marked; })
+      .map(function (o) { return o.label; }).join(', ');
+  }
+  if (q.kind === 'truefalse') {
+    return q.statements.map(function (s) {
+      return s.truth === true ? 'Đ' : s.truth === false ? 'S' : '?';
+    }).join(' ');
+  }
+  if (q.kind === 'short') return q.parts.map(function (p) { return p.value; }).join('');
+  return '';
+}
+
+function compactRow(q, i) {
+  var ans = answerKey(q);
+
+  return '<div class="q compact" style="--i:' + Math.min(i || 0, 12) + '">' +
+    '<span class="num">' + esc(q.index || '') + '</span>' +
+    '<span class="ans">' + (ans ? esc(ans) : '&mdash;') + '</span></div>';
+}
+
 function questionHtml(q, i) {
   var num = q.index || '';
   var opts = '';
 
-  if (compact) {
-    var ans = '';
-
-    if (q.kind === 'choice') {
-      ans = q.options.filter(function (o) { return o.marked; })
-        .map(function (o) { return o.label; }).join(', ');
-    } else if (q.kind === 'truefalse') {
-      ans = q.statements.map(function (s) {
-        return s.truth === true ? 'Đ' : s.truth === false ? 'S' : '?';
-      }).join(' ');
-    } else if (q.kind === 'short') {
-      ans = q.parts.map(function (p) { return p.value; }).join('');
-    }
-
-    return '<div class="q compact" style="--i:' + Math.min(i || 0, 12) + '">' +
-      '<span class="num">' + esc(num) + '</span>' +
-      '<span class="ans">' + (ans ? esc(ans) : '&mdash;') + '</span></div>';
+  // PDF exams only carry the letter of each option, so the row is just the key.
+  if (compact || (q.kind === 'choice' && q.options.every(function (o) { return !o.text; }))) {
+    return compactRow(q, i);
   }
 
   if (q.kind === 'choice') {
