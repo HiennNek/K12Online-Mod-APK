@@ -630,6 +630,10 @@ function pageHtml(opts) {
 
     return '<!doctype html><html><head><meta charset="utf-8">' +
         '<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">' +
+        // Same webfont the userscript loads; the stack above falls back to Roboto.
+        '<link rel="preconnect" href="https://fonts.googleapis.com">' +
+        '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>' +
+        '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:wght,ROND@100..1000,100&display=swap">' +
         '<style>' + TOKENS + CSS + '</style>' +
         '<style id="theme"></style>' +
         '<style>:root{--body-max:' + (opts.bodyMax || 480) + 'px}</style>' +
