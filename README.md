@@ -4,7 +4,12 @@
 <img width="35%" alt="image" src="https://github.com/user-attachments/assets/31f7942f-882f-4c5b-a781-2f61fe2c9014" />
 </div>
 
-## Cách build dự án này
+## Cách cài đặt
+1. Xóa app K12Online gốc nếu đã cài
+2. Tải APK mod từ [Release](https://github.com/HiennNek/K12Online-Mod-APK/releases/download/v2.2.2-6/K12Online-Mod-APK_2.2.2.apk)
+3. Cài đặt file APK đã cài (sẽ tốn một lúc vì file là bundled apk được merge thành 1 file apk)
+
+## Cách build dự án này (cho development)
 
 1. Clone repo
    ```bash
