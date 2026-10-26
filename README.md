@@ -1,5 +1,9 @@
 <h1 align="center">K12Online Mod APK<br><small>Tìm đáp án bài kiểm tra K12Online trên app</small></h1>
 
+<div align="center">
+<img width="35%" alt="image" src="https://github.com/user-attachments/assets/31f7942f-882f-4c5b-a781-2f61fe2c9014" />
+</div>
+
 ## Cách build dự án này
 
 1. Clone repo
@@ -33,3 +37,8 @@
 
 7. Sau khi build xong, nó sẽ ra 2 file: `K12Online_2.2.2_hacked.apk` (cài file này) và,
    `K12Online_2.2.2_hacked.xapk` (nếu bạn thích dùng dạng XAPK)
+
+> [!WARNING]
+> K12Online Mod APK được tạo ra nhằm mục đích nghiên cứu, tìm hiểu và nâng cao ý thức về bảo mật. Không sử dụng K12Online Mod APK để gian lận trong thi cử, vi phạm nội quy nhà trường và pháp luật. Chỉ sử dụng K12Online Mod APK khi có sự cho phép của giáo viên ‌/ người ra bài kiểm tra hoặc người có thẩm quyền. Mọi hành vi vi phạm nội quy thi cử, nội quy nhà trường, quy định pháp luật cũng như gian lận trong thi cử hay sử dụng công cụ này trong bài kiểm tra mà không có sự đồng ý của giáo viên, người ra bài kiểm tra hoặc người có thẩm quyền đều do cá nhân, đơn vị sử dụng chịu trách nhiệm.
+> 
+> Mã nguồn của K12Online Mod APK được phân phối dưới giấy phép PolyForm Noncommercial 1.0.0 (Giấy phép phi thương mại PolyForm 1.0.0)
