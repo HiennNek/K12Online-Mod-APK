@@ -900,11 +900,17 @@ function ensureFab(activity) {
 
     var colors = fabColors();
 
+    // Same webfont the panel and the userscript's FAB use; bold Roboto if missing.
+    var typeface = null;
+    try {
+        typeface = Typeface.createFromAsset(activity.getAssets(), 'k12port/GoogleSansFlex.ttf');
+    } catch (e) { log('fab font: ' + e); }
+
     var fab = TextView.$new(activity);
     fab.setText(jstr('K12'));
     fab.setTextSize(24);
     fab.setTextColor(Color.parseColor(colors.fg));
-    fab.setTypeface(Typeface.DEFAULT_BOLD.value);
+    fab.setTypeface(typeface || Typeface.DEFAULT_BOLD.value);
     fab.setGravity(Gravity.CENTER.value);
     fab.setIncludeFontPadding(false);
 

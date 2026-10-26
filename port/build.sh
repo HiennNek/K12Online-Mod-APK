@@ -87,6 +87,17 @@ with zipfile.ZipFile(apk, 'a') as z:
 PY
 fi
 
+# The K12 bubble is a native TextView, so its font has to ship in the APK.
+if ! python3 -c "import zipfile,sys; sys.exit('assets/k12port/GoogleSansFlex.ttf' not in zipfile.ZipFile('$B/base-unsigned.apk').namelist())"; then
+    python3 - "$B/base-unsigned.apk" "$HERE/agent/GoogleSansFlex.ttf" "$HERE/agent/GoogleSansFlex.OFL.txt" <<'PY'
+import sys, zipfile
+apk, font, ofl = sys.argv[1], sys.argv[2], sys.argv[3]
+with zipfile.ZipFile(apk, 'a') as z:
+    z.write(font, 'assets/k12port/GoogleSansFlex.ttf')
+    z.write(ofl, 'assets/k12port/GoogleSansFlex.OFL.txt')
+PY
+fi
+
 # 4. ABI split: gadget + config + agent ---------------------------------------
 echo "== assembling arm64 split"
 cp "$SRC/config.arm64_v8a.apk" "$B/abi-work.apk"
