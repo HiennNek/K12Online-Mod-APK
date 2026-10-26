@@ -81,6 +81,33 @@ const posApp = h.extractReport(JSON.stringify({
 }));
 assert.strictEqual(posApp.groups[0].questions[0].answer, 'A. right');
 
+// Reading group: the group's choices are sub-questions with their own options,
+// and `answer` is the answerCode of the key option (array order = A, B, C, D).
+const readingGroup = {
+  questionIndex: 1,
+  elementType: 'ReadAndAnswerQuestion',
+  textTitle: 'Passage',
+  choices: [
+    { answerCode: '1', answer: '3', answerTitle: 'Question 7.', options: [
+      { answerCode: 1, title: 'various' },
+      { answerCode: 3, title: 'low' },
+      { answerCode: 2, title: 'high' },
+      { answerCode: 4, title: 'rich' },
+    ] },
+    { answerCode: '2', answer: '4', answerTitle: 'Question 8.', options: [
+      { answerCode: 3, title: 'number' },
+      { answerCode: 2, title: 'great deal of' },
+      { answerCode: 1, title: 'variety' },
+      { answerCode: 4, title: 'amount' },
+    ] },
+  ],
+};
+const groupReport = h.extractReport(JSON.stringify({ items: [readingGroup] }));
+assert.strictEqual(groupReport.itemCount, 2);
+assert.strictEqual(groupReport.groups[0].questions[0].answer, 'B. low');
+assert.strictEqual(groupReport.groups[0].questions[1].answer, 'D. amount');
+assert.deepStrictEqual(groupReport.groups[0].questions.map((q) => q.index), [1, 2]);
+
 // Content-Length response split across reads.
 const body = Buffer.from(JSON.stringify({ data: { items: [choice] } }));
 const head = Buffer.from('HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: ' + body.length + '\r\n\r\n');

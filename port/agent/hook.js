@@ -195,7 +195,38 @@ function classify(item) {
     return 'unknown';
 }
 
+// Group children come as {answerTitle, options:[{answerCode, title}], answer},
+// where `answer` is the answerCode of the key option and options are on-screen
+// order (A, B, C, ...), same as normal choices.
+function describeChild(item) {
+    var key = txt(item.answer);
+    var opts = item.options.map(function (o, i) {
+        return {
+            label: labelUpper(i),
+            text: txt(o.title),
+            marked: String(o.answerCode) === key,
+        };
+    });
+    var marked = opts.filter(function (o) { return o.marked; });
+
+    return {
+        index: Number(item.questionIndex) || 0,
+        kind: 'choice',
+        title: txt(item.answerTitle) || txt(item.textTitle) || txt(item.title),
+        note: txt(item.answerDescription),
+        answer: marked.length
+            ? marked.map(function (o) { return o.label + '. ' + truncate(o.text, 60); }).join(' | ')
+            : '\u2014',
+        options: opts,
+        statements: [],
+        parts: [],
+        lettered: true,
+    };
+}
+
 function describeItem(item) {
+    if (Array.isArray(item && item.options) && item.answer != null) return describeChild(item);
+
     var kind = classify(item);
     var out = {
         index: Number(item.questionIndex) || 0,
@@ -256,13 +287,29 @@ function describeItem(item) {
     return out;
 }
 
+// Reading exams group a passage with its sub-questions: the group's `choices`
+// are the questions themselves, each with {answerTitle, options[], answer}.
+function isGroup(item) {
+    var entries = choiceEntries(item && item.choices);
+    if (entries.length === 0) return false;
+
+    return entries.every(function (e) {
+        return !!e.value && Array.isArray(e.value.options);
+    });
+}
+
 function buildReport(items) {
     var groups = [];
     var byName = {};
 
-    for (var i = 0; i < items.length; i++) {
-        var item = items[i];
-        var name = txt(item.partTitle) || txt(item.elementTypeTitle) || 'C\u00e2u h\u1ecfi';
+    function add(item, fallbackName) {
+        if (isGroup(item)) {
+            var fallback = txt(item.partTitle) || txt(item.elementTypeTitle) || fallbackName;
+            choiceEntries(item.choices).forEach(function (e) { add(e.value, fallback); });
+            return;
+        }
+
+        var name = txt(item.partTitle) || txt(item.elementTypeTitle) || fallbackName || 'C\u00e2u h\u1ecfi';
         var group = byName[name];
 
         if (!group) {
@@ -273,6 +320,8 @@ function buildReport(items) {
         group.questions.push(describeItem(item));
     }
 
+    for (var i = 0; i < items.length; i++) add(items[i]);
+
     var n = 0;
     groups.forEach(function (g) {
         g.questions.forEach(function (q) {
@@ -281,7 +330,7 @@ function buildReport(items) {
         });
     });
 
-    return { groups: groups, itemCount: items.length };
+    return { groups: groups, itemCount: n };
 }
 
 function reportText(report) {
