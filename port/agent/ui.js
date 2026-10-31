@@ -1,5 +1,6 @@
 // The userscript's Material 3 panel, ported as-is (minus the replay-request
-// tool). Rendered in a WebView so the CSS/HTML stay identical to the original.
+// tool; compact mode is a port addition for phones). Rendered in a WebView so
+// the CSS/HTML stay identical to the original.
 
 var SCHEME = {
     light: {
@@ -47,6 +48,7 @@ var SCHEME = {
 var TOKENS = `
   :root {
     --md-font: "Google Sans Flex", "Google Sans", Roboto, system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+    --md-icon-font: "Material Symbols Rounded";
     font-variation-settings: 'ROND' 100;
     font-optical-sizing: auto;
 
@@ -82,6 +84,25 @@ var TOKENS = `
     --md-sys-typescale-title-medium: 500 18px/26px var(--md-font);
     --md-sys-typescale-title-large: 400 24px/30px var(--md-font);
   }
+
+  .md-icon {
+    font-family: var(--md-icon-font) !important;
+    font-weight: normal !important;
+    font-style: normal !important;
+    font-size: 20px !important;
+    line-height: 1 !important;
+    letter-spacing: normal !important;
+    text-transform: none !important;
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+    word-wrap: normal;
+    direction: ltr;
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+    -webkit-font-smoothing: antialiased;
+    user-select: none;
+  }
 `;
 
 var CSS = `
@@ -96,7 +117,10 @@ var CSS = `
   .host { padding: 12px; }
 
   .panel {
-    width: 100%;
+    /* The WebView viewport is already the panel width + 24px of host padding,
+       so use 24 here instead of the userscript's 32 (which assumes a full-page
+       viewport) to keep the panel at the script's 456px / screen - 32px. */
+    width: 456px; max-width: calc(100vw - 24px);
     padding: 6px 0 var(--sp-4);
     background: var(--md-sys-color-surface-container);
     color: var(--md-sys-color-on-surface);
@@ -183,17 +207,16 @@ var CSS = `
     from { opacity: 0; transform: scale(.9); }
   }
   .menu-item {
-    all: unset; box-sizing: border-box;
-    display: flex; align-items: center; gap: var(--sp-2);
     width: 100%; min-height: 44px; padding: 0 var(--sp-3);
-    border-radius: var(--md-sys-shape-corner-small);
-    color: var(--md-sys-color-on-surface);
-    font: var(--md-sys-typescale-label-large);
+    display: flex; align-items: center; gap: var(--sp-3);
+    border: none; border-radius: var(--md-sys-shape-corner-small);
+    background: transparent; color: var(--md-sys-color-on-surface);
+    font: var(--md-sys-typescale-label-large); text-align: left;
     cursor: pointer;
   }
-  .menu-item:hover { background: color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent); }
+  .menu-item:hover { background: var(--md-sys-color-surface-container-highest); }
   .menu-item:focus-visible { outline: 2px solid var(--md-sys-color-primary); outline-offset: -2px; }
-  .menu-sep { height: 1px; margin: var(--sp-1) var(--sp-2); background: var(--md-sys-color-outline-variant); }
+  .menu-sep { height: 1px; margin: var(--sp-2) 0; background: var(--md-sys-color-outline-variant); }
   .switch {
     margin-left: auto; position: relative;
     width: 40px; height: 24px; flex: 0 0 auto;
@@ -217,7 +240,7 @@ var CSS = `
   }
   .menu-item[aria-checked="true"] .switch::after { left: 19px; background: var(--md-sys-color-on-primary); }
 
-  .menu-block { position: relative; padding: var(--sp-1) var(--sp-3) var(--sp-4); }
+  .menu-block { position: relative; padding: var(--sp-1) var(--sp-3) var(--sp-2); }
   .menu-label {
     display: block;
     font: var(--md-sys-typescale-label-small);
@@ -264,13 +287,15 @@ var CSS = `
   }
   .theme-btn:hover { background: var(--md-sys-color-surface-container-high); }
   .theme-btn:active { transform: scale(.92); }
-  .theme-btn svg { width: 18px; height: 18px; fill: currentColor; }
-  .theme-btn .i-sun { display: none; }
-  html[data-theme="dark"] .theme-btn .i-sun { display: block; }
-  html[data-theme="dark"] .theme-btn .i-moon { display: none; }
+  .theme-btn:focus-visible { outline: 2px solid var(--md-sys-color-primary); outline-offset: 2px; }
+  .theme-btn .md-icon { font-size: 18px; }
+  /* .md-icon sets display with !important, so the toggle needs it too. */
+  .theme-btn .i-sun { display: none !important; }
+  html[data-theme="dark"] .theme-btn .i-sun { display: inline-flex !important; }
+  html[data-theme="dark"] .theme-btn .i-moon { display: none !important; }
 
   .body {
-    max-height: var(--body-max, 60vh);
+    max-height: var(--body-max, min(72vh, 720px));
     overflow: auto;
     padding: 0 var(--sp-4);
     overscroll-behavior: contain;
@@ -347,7 +372,7 @@ var CSS = `
     background: var(--md-sys-color-primary-container);
     color: var(--md-sys-color-on-primary-container);
   }
-  .opt.on i { font-style: normal; font-size: 12px; }
+  .opt.on .md-icon { font-size: 14px; font-variation-settings: 'FILL' 1, 'wght' 600, 'GRAD' 0, 'opsz' 14; }
   .opt.off {
     border-color: transparent;
     background: var(--md-sys-color-error-container);
@@ -385,15 +410,15 @@ var PANEL = `
     <header class="bar">
       <span class="brand" aria-hidden="true">K12</span>
       <span class="title">K12Online Hack - bài kiểm tra</span>
-      <button class="icon-btn" type="button" data-act="min" title="Thu nhỏ" aria-label="Thu nhỏ">&#8211;</button>
-      <button class="icon-btn" type="button" data-act="close" title="Đóng" aria-label="Đóng">&#215;</button>
+      <button class="icon-btn" type="button" data-act="min" title="Thu nhỏ" aria-label="Thu nhỏ"><span class="md-icon">remove</span></button>
+      <button class="icon-btn" type="button" data-act="close" title="Đóng" aria-label="Đóng"><span class="md-icon">close</span></button>
     </header>
     <div class="actions">
-      <button class="btn tonal" type="button" data-act="scan" title="Scan lại trang này">&#8635; Scan lại</button>
+      <button class="btn tonal" type="button" data-act="scan" title="Scan lại trang này"><span class="md-icon" style="font-size:16px">refresh</span> Scan lại</button>
       <div class="menu-wrap">
-        <button class="icon-btn" type="button" data-act="menu" title="Tùy chọn" aria-label="Tùy chọn" aria-haspopup="true" aria-expanded="false">&#8943;</button>
+        <button class="icon-btn" type="button" data-act="menu" title="Tùy chọn" aria-label="Tùy chọn" aria-haspopup="true" aria-expanded="false"><span class="md-icon">more_horiz</span></button>
         <div class="menu" hidden>
-          <button class="menu-item" type="button" data-act="compact" role="menuitemcheckbox" aria-checked="false">Thu gọn <span class="switch" aria-hidden="true"></span></button>
+          <button class="menu-item" type="button" data-act="compact" role="menuitemcheckbox" aria-checked="false"><span class="md-icon">unfold_less</span> Thu gọn <span class="switch" aria-hidden="true"></span></button>
           <div class="menu-sep"></div>
           <div class="menu-block">
             <span class="menu-label">Giao diện</span>
@@ -401,8 +426,8 @@ var PANEL = `
               <span class="wheel-thumb"></span>
             </div>
             <button class="theme-btn" type="button" data-act="theme" title="Chuyển chế độ sáng/tối" aria-label="Chuyển chế độ sáng/tối">
-              <svg class="i-sun" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.99 4.58c-.39-.39-1.03-.39-1.41 0-.39.39-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41L5.99 4.58zm12.37 12.37c-.39-.39-1.03-.39-1.41 0-.39.39-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0 .39-.39.39-1.03 0-1.41l-1.06-1.06zm1.06-12.37l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06c.39-.39.39-1.03 0-1.41s-1.03-.39-1.41 0zM7.05 18.36l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06c.39-.39.39-1.03 0-1.41s-1.03-.39-1.41 0z"/></svg>
-              <svg class="i-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9c0-.46-.04-.92-.1-1.36-.98 1.37-2.58 2.26-4.4 2.26-2.98 0-5.4-2.42-5.4-5.4 0-1.81.89-3.42 2.26-4.4-.44-.06-.9-.1-1.36-.1z"/></svg>
+              <span class="md-icon i-sun">light_mode</span>
+              <span class="md-icon i-moon">dark_mode</span>
             </button>
           </div>
         </div>
@@ -488,7 +513,7 @@ function questionHtml(q, i) {
     opts = q.options.map(function (o) {
       var label = q.lettered ? o.label + '. ' + o.text : o.text;
       return '<span class="opt' + (o.marked ? ' on' : '') + '">' + esc(label) +
-        (o.marked ? '<i>&#10003;</i>' : '') + '</span>';
+        (o.marked ? '<span class="md-icon">check</span>' : '') + '</span>';
     }).join('');
   } else if (q.kind === 'truefalse') {
     opts = q.statements.map(function (s) {
@@ -630,10 +655,10 @@ function pageHtml(opts) {
 
     return '<!doctype html><html><head><meta charset="utf-8">' +
         '<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">' +
-        // Same webfont the userscript loads; the stack above falls back to Roboto.
+        // Same webfonts the userscript loads; the stack above falls back to Roboto.
         '<link rel="preconnect" href="https://fonts.googleapis.com">' +
         '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>' +
-        '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:wght,ROND@100..1000,100&display=swap">' +
+        '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:wght,ROND@100..1000,100&family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap">' +
         '<style>' + TOKENS + CSS + '</style>' +
         '<style id="theme"></style>' +
         '<style>:root{--body-max:' + (opts.bodyMax || 480) + 'px}</style>' +

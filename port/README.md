@@ -20,14 +20,15 @@ Or install `K12Online_2.2.2_hacked.xapk` with any XAPK installer (APKPure app,
 SAI, …). arm64 only — there is no armeabi-v7a or x86 split. Native libs are
 extracted on install (`extractNativeLibs=true`), so allow ~700 MB free.
 
-The panel is the userscript's own Material 3 UI, so it looks and behaves like the
-browser version: drag it by the title bar, `–` minimizes, `✕` closes it (the K12
-bubble in the bottom-right brings it back), `⋯` opens the hue wheel / light-dark
-toggle and **Thu gọn** (compact answer key), and the text is selectable. Compact
-mode drops the question text and shows only the number plus the answer — `2 D`
-for a choice, `28 Đ S S Đ` for true/false — and is on by default on screens
-narrower than 600 dp (phones). The only thing not ported is the menu's
-**Replay request** tool, which needs a browser page to replay into.
+The panel is the userscript's own Material 3 UI (Google Sans Flex and Material
+Symbols Rounded), so it looks and behaves like the browser version: drag it by
+the title bar, the minimize button collapses it, the close button hides it (the
+K12 bubble in the bottom-right brings it back), `⋯` opens the hue wheel /
+light-dark toggle and **Thu gọn** (compact answer key), and the text is
+selectable. Compact mode drops the question text and shows only the number plus
+the answer — `2 D` for a choice, `28 Đ S S Đ` for true/false — and is on by
+default on screens narrower than 600 dp (phones). The only thing not ported is
+the menu's **Replay request** tool, which needs a browser page to replay into.
 
 The K12 bubble is drawn natively but uses the same `primary-container` /
 `on-primary-container` roles as the panel, computed from the saved theme and
