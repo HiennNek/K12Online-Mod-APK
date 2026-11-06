@@ -6,7 +6,7 @@
 
 ## Cách cài đặt
 1. Xóa app K12Online gốc nếu đã cài
-2. Tải APK mod từ [Release](https://github.com/HiennNek/K12Online-Mod-APK/releases/download/v2.2.2-6/K12Online-Mod-APK_2.2.2.apk)
+2. Tải APK mod từ [Release](https://github.com/HiennNek/K12Online-Mod-APK/releases/download/v2.2.2-7/K12Online-Mod-APK_2.2.2.apk)
 3. Cài đặt file APK đã tải (sẽ tốn một lúc vì file là bundled apk được merge thành 1 file apk)
 
 ## Cách build dự án này (cho development)
