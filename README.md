@@ -11,6 +11,8 @@
 
 ## Cách build dự án này (cho development)
 
+### Vì mod apk này hoàn toàn mã nguồn mở (open-source), bạn có thể xem, chỉnh sửa cũng như tùy chỉnh phần mềm
+
 1. Clone repo
    ```bash
    git clone https://github.com/HiennNek/K12Online-Mod-APK.git
