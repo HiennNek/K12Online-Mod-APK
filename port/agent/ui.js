@@ -346,14 +346,20 @@ var CSS = `
     color: var(--md-sys-color-on-surface);
     overflow-wrap: anywhere;
   }
-  .q.compact { display: flex; align-items: center; gap: var(--sp-2); padding: var(--sp-2) var(--sp-3); }
+  .q.compact { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-2); padding: var(--sp-2) var(--sp-3); }
   .q.compact .qtitle { display: none; }
   .grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
     gap: var(--sp-1);
+    margin-top: var(--sp-2);
   }
   .grid .q { margin-top: 0; }
+  .grid .q.compact { flex: 0 0 auto; align-self: flex-start; max-width: 100%; padding: var(--sp-1); gap: var(--sp-1); }
+  .grid .q.compact .num { min-width: 24px; height: 24px; padding: 0 var(--sp-1); }
+  .grid .q.compact .opt.blank { min-width: 0; }
+  .grid .q.compact .opt.blank.wide { flex: 1 1 0; }
   .ans {
     flex: 1; min-width: 0;
     font: var(--md-sys-typescale-label-large); font-weight: 700;
@@ -386,7 +392,7 @@ var CSS = `
     color: var(--md-sys-color-on-error-container);
   }
   .opt.blank {
-    justify-content: center; min-width: 34px;
+    justify-content: center; min-width: 24px; padding: 2px var(--sp-1);
     border-color: transparent;
     background: var(--md-sys-color-surface-container-high);
     color: var(--md-sys-color-on-surface);
@@ -495,16 +501,29 @@ function answerKey(q) {
       return s.truth === true ? 'Đ' : s.truth === false ? 'S' : '?';
     }).join(' ');
   }
-  if (q.kind === 'short') return q.parts.map(function (p) { return p.value; }).join('');
   return '';
 }
 
+function blankChips(q, extra) {
+  return q.parts.map(function (p) {
+    return '<span class="opt blank' + (extra ? ' ' + extra : '') + '" title="' + esc(p.key) + '">' +
+      (p.value === '' ? '&empty;' : esc(p.value)) + '</span>';
+  }).join('');
+}
+
 function compactRow(q, i) {
-  var ans = answerKey(q);
+  // Fill-in keeps the normal mode's one chip per blank, next to the number.
+  var body;
+  if (q.kind === 'short') {
+    // A lone long answer shares the line with the number and wraps inside the chip.
+    body = blankChips(q, q.parts.length === 1 ? 'wide' : '');
+  } else {
+    var ans = answerKey(q);
+    body = '<span class="ans">' + (ans ? esc(ans) : '&mdash;') + '</span>';
+  }
 
   return '<div class="q compact" style="--i:' + Math.min(i || 0, 12) + '">' +
-    '<span class="num">' + esc(q.index || '') + '</span>' +
-    '<span class="ans">' + (ans ? esc(ans) : '&mdash;') + '</span></div>';
+    '<span class="num">' + esc(q.index || '') + '</span>' + body + '</div>';
 }
 
 function questionHtml(q, i) {
@@ -529,10 +548,7 @@ function questionHtml(q, i) {
       return '<span class="opt' + cls + '" title="' + esc(s.text) + '">' + esc(s.label) + '. <b>' + val + '</b></span>';
     }).join('');
   } else if (q.kind === 'short') {
-    opts = q.parts.map(function (p) {
-      return '<span class="opt blank" title="' + esc(p.key) + '">' +
-        (p.value === '' ? '&empty;' : esc(p.value)) + '</span>';
-    }).join('');
+    opts = blankChips(q);
   }
 
   return '<div class="q" style="--i:' + Math.min(i || 0, 12) + '">' +
