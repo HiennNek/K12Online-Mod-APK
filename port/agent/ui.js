@@ -356,6 +356,7 @@ var CSS = `
     overflow-wrap: anywhere;
   }
   .opts { display: flex; flex-wrap: wrap; gap: var(--sp-2); margin-top: var(--sp-2); }
+  .opts.col { flex-direction: column; align-items: stretch; }
   .opt {
     display: inline-flex; align-items: center; gap: var(--sp-1);
     max-width: 100%;
@@ -547,10 +548,26 @@ function reportHtml(report) {
   return groups || '<div class="empty"><b>Không tìm thấy dữ liệu bài kiểm tra trên trang</b></div>';
 }
 
+// One row if every choice fits, otherwise a single column (never row + column).
+function layoutOpts(container) {
+  var boxes = container.querySelectorAll('.opts');
+  for (var i = 0; i < boxes.length; i++) {
+    var box = boxes[i];
+    var items = box.children;
+    if (items.length < 2 || !box.getClientRects().length) continue;
+    box.classList.remove('col'); // measure the row layout, not a previous column
+    if (items[0].getBoundingClientRect().top !== items[items.length - 1].getBoundingClientRect().top) {
+      box.classList.add('col');
+    }
+  }
+}
+
 function renderReport(report) {
   last = report;
-  document.querySelector('.body').innerHTML = reportHtml(report);
-  document.querySelector('.body').scrollTop = 0;
+  var body = document.querySelector('.body');
+  body.innerHTML = reportHtml(report);
+  body.scrollTop = 0;
+  layoutOpts(body);
 }
 
 var lastH = 0;
@@ -576,6 +593,11 @@ function boot() {
   if (window.ResizeObserver) {
     new ResizeObserver(reportSize).observe(document.querySelector('.panel'));
   }
+
+  // Rotation / window resize changes the width: re-check row vs column.
+  window.addEventListener('resize', function () {
+    layoutOpts(document.querySelector('.body'));
+  });
 
   renderReport(window.__INITIAL__ || { groups: [] });
 
@@ -608,7 +630,9 @@ function boot() {
       paint();
       send('theme', theme);
     } else if (act === 'min') {
-      root.querySelector('.panel').classList.toggle('min');
+      var panel = root.querySelector('.panel');
+      panel.classList.toggle('min');
+      if (!panel.classList.contains('min')) layoutOpts(document.querySelector('.body'));
     } else if (act === 'close') {
       closeMenu();
       send('close');
