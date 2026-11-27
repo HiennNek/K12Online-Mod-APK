@@ -348,6 +348,12 @@ var CSS = `
   }
   .q.compact { display: flex; align-items: center; gap: var(--sp-2); padding: var(--sp-2) var(--sp-3); }
   .q.compact .qtitle { display: none; }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+    gap: var(--sp-1);
+  }
+  .grid .q { margin-top: 0; }
   .ans {
     flex: 1; min-width: 0;
     font: var(--md-sys-typescale-label-large); font-weight: 700;
@@ -539,9 +545,12 @@ function questionHtml(q, i) {
 
 function reportHtml(report) {
   var groups = report.groups.map(function (g) {
+    var rows = g.questions.map(function (q, i) { return questionHtml(q, i); }).join('');
+    // Compact mode is a dense answer sheet, so lay the rows out in a grid.
+    if (compact) rows = '<div class="grid">' + rows + '</div>';
     return '<section class="part">' +
       '<div class="part-head">' + esc(g.name) + ' <em>' + g.questions.length + '</em></div>' +
-      g.questions.map(function (q, i) { return questionHtml(q, i); }).join('') +
+      rows +
       '</section>';
   }).join('');
 
